@@ -15,8 +15,8 @@ body {
   overflow: hidden;
   color: var(--text);
   background: radial-gradient(1200px 800px at 20% 10%, #0f172a, var(--bg));
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-    "Noto Sans JP", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+  font-family: "Inter", "Noto Sans JP", system-ui, -apple-system,
+    BlinkMacSystemFont, sans-serif;
 }
 .topbar {
   position: fixed;
@@ -55,7 +55,7 @@ body {
   font-size: 13px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
 .btn:hover {
   border-color: rgba(148, 163, 184, 0.45);
@@ -156,7 +156,7 @@ body {
   border: 1px solid rgba(148, 163, 184, 0.25);
   border-radius: 10px;
   color: #e5e7eb;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1.4;
 
   opacity: 0;

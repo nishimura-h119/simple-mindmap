@@ -13,7 +13,7 @@ export function computeLayout(state, ctx) {
 
   // フォントは label に合わせる
   ctx.font =
-    "650 14px ui-sans-serif, system-ui, -apple-system, 'Segoe UI', 'Noto Sans JP', Meiryo, sans-serif";
+    "650 14px Inter, 'Noto Sans JP', system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
 
   const depths = {};
   const widths = {};
