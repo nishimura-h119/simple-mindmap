@@ -20,21 +20,55 @@ const btnAddChild = document.getElementById("btnAddChild");
 const btnDelete = document.getElementById("btnDelete");
 const btnReset = document.getElementById("btnReset");
 const btnFit = document.getElementById("btnFit");
+const btnExport = document.getElementById("btnExport");
+const btnImport = document.getElementById("btnImport");
+const importFile = document.getElementById("importFile");
 
 let dpr = resizeCanvas(canvas, ctx);
 
-// layout キャッシュ（パン中はこれを使って線だけ描き直す）
+// =============================
+// Undo / Redo
+// =============================
+const undoStack = [];
+const redoStack = [];
+const MAX_HISTORY = 100;
+
+function cloneState(s) {
+  return typeof structuredClone === "function"
+    ? structuredClone(s)
+    : JSON.parse(JSON.stringify(s));
+}
+
+function pushHistory() {
+  undoStack.push(cloneState(state));
+  if (undoStack.length > MAX_HISTORY) undoStack.shift();
+  redoStack.length = 0;
+}
+
+function undo() {
+  if (!undoStack.length) return;
+  redoStack.push(cloneState(state));
+  state = undoStack.pop();
+  saveState(state);
+  rerender();
+  requestEdgeRedraw();
+}
+
+function redo() {
+  if (!redoStack.length) return;
+  undoStack.push(cloneState(state));
+  state = redoStack.pop();
+  saveState(state);
+  rerender();
+  requestEdgeRedraw();
+}
+
+// =============================
+// 描画管理
+// =============================
 let latestLayout = null;
 let drawPending = false;
 
-// 「編集開始時に全選択」用
-let pendingSelectAllId = null;
-
-function getState() {
-  return state;
-}
-
-// ★ 線だけ軽量再描画（DOMは触らない）
 function requestEdgeRedraw() {
   if (drawPending) return;
   drawPending = true;
@@ -42,7 +76,6 @@ function requestEdgeRedraw() {
   requestAnimationFrame(() => {
     drawPending = false;
     if (!latestLayout) return;
-
     const view = controller.getView();
     drawEdges({ state, layout: latestLayout, ctx, view, dpr });
   });
@@ -71,7 +104,6 @@ function rerender() {
 
   wireEditingHandlers();
 
-  // ダブルクリック編集 or 追加直後編集のときだけ、フォーカス&全選択
   if (pendingSelectAllId) {
     const id = pendingSelectAllId;
     pendingSelectAllId = null;
@@ -81,9 +113,7 @@ function rerender() {
         `.node[data-id="${CSS.escape(id)}"] .label`
       );
       if (!label) return;
-
       label.focus();
-
       const range = document.createRange();
       range.selectNodeContents(label);
       const sel = window.getSelection();
@@ -93,36 +123,10 @@ function rerender() {
   }
 }
 
-function wireEditingHandlers() {
-  // 編集中の label だけ拾う
-  const editable = nodesEl.querySelectorAll(".label[contenteditable='true']");
-  editable.forEach((label) => {
-    const nodeEl = label.closest(".node");
-    const id = nodeEl?.dataset?.id;
-    if (!id) return;
-
-    // 二重バインド防止
-    if (label.dataset.bound === "1") return;
-    label.dataset.bound = "1";
-
-    label.addEventListener("keydown", (e) => {
-      if (state.editingId !== id) return;
-
-      if (e.key === "Enter") {
-        e.preventDefault();
-        commitEditFromDOM(id);
-      } else if (e.key === "Escape") {
-        e.preventDefault();
-        cancelEdit();
-      }
-    });
-
-    // クリック外で確定したい場合の保険
-    label.addEventListener("blur", () => {
-      if (state.editingId === id) commitEditFromDOM(id);
-    });
-  });
-}
+// =============================
+// 編集制御
+// =============================
+let pendingSelectAllId = null;
 
 function startEdit(id, { selectAll = false } = {}) {
   if (!state.nodes[id]) return;
@@ -138,18 +142,21 @@ function startEdit(id, { selectAll = false } = {}) {
 }
 
 function commitEditFromDOM(id) {
-  const n = state.nodes[id];
-  if (!n) return;
+  const node = state.nodes[id];
+  if (!node) return;
 
-  const labelEl = nodesEl.querySelector(
+  const label = nodesEl.querySelector(
     `.node[data-id="${CSS.escape(id)}"] .label`
   );
-  const text = (labelEl?.innerText ?? "").trim();
+  const text = (label?.innerText ?? "").trim();
 
-  n.label = text || "（無題）";
+  if (node.label !== text) {
+    pushHistory();
+    node.label = text || "（無題）";
+  }
+
   state.editingId = null;
   state.snapshot = null;
-
   saveState(state);
   rerender();
 }
@@ -157,19 +164,44 @@ function commitEditFromDOM(id) {
 function cancelEdit() {
   if (!state.editingId) return;
   const id = state.editingId;
-
   const n = state.nodes[id];
   if (n) n.label = state.snapshot ?? n.label;
-
   state.editingId = null;
   state.snapshot = null;
-
   saveState(state);
   rerender();
 }
 
+function wireEditingHandlers() {
+  const labels = nodesEl.querySelectorAll(".label[contenteditable='true']");
+  labels.forEach((label) => {
+    const id = label.closest(".node")?.dataset?.id;
+    if (!id || label.dataset.bound) return;
+    label.dataset.bound = "1";
+
+    label.addEventListener("keydown", (e) => {
+      if (state.editingId !== id) return;
+      if (e.key === "Enter") {
+        e.preventDefault();
+        commitEditFromDOM(id);
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        cancelEdit();
+      }
+    });
+
+    label.addEventListener("blur", () => {
+      if (state.editingId === id) commitEditFromDOM(id);
+    });
+  });
+}
+
+// =============================
+// ノード操作
+// =============================
 function addChild() {
   if (state.editingId) return;
+  pushHistory();
 
   const parentId = state.selectedId || state.rootId;
   const parent = state.nodes[parentId];
@@ -177,13 +209,10 @@ function addChild() {
 
   const id = uid();
   state.nodes[id] = { id, label: "新しいノード", parentId, children: [] };
-  parent.children = parent.children || [];
   parent.children.push(id);
 
   state.selectedId = id;
   saveState(state);
-
-  // 追加直後は即編集したい
   startEdit(id, { selectAll: true });
 }
 
@@ -192,95 +221,106 @@ function removeSubtree(id) {
   if (!n) return;
 
   const p = state.nodes[n.parentId];
-  if (p && Array.isArray(p.children)) {
-    p.children = p.children.filter((x) => x !== id);
-  }
+  if (p) p.children = p.children.filter((c) => c !== id);
 
   const stack = [id];
   while (stack.length) {
     const cur = stack.pop();
     const node = state.nodes[cur];
     if (!node) continue;
-    for (const k of node.children ?? []) stack.push(k);
+    for (const c of node.children) stack.push(c);
     delete state.nodes[cur];
   }
 }
 
 function deleteSelected() {
   if (state.editingId) return;
-
   const id = state.selectedId;
-  if (!id) return;
+  if (!id || id === state.rootId) return;
 
-  if (id === state.rootId) {
-    alert("ルートは削除できません。");
-    return;
-  }
-
+  pushHistory();
   removeSubtree(id);
   state.selectedId = state.rootId;
-
   saveState(state);
   rerender();
 }
 
-function reset() {
-  const ok = window.confirm("マインドマップを初期化します。リセットしますか？");
-  if (!ok) return;
+// =============================
+// Import / Export
+// =============================
+function exportJSON() {
+  if (state.editingId) {
+    document.activeElement?.blur();
+  }
 
-  resetState();
-  state = defaultState();
+  const blob = new Blob([JSON.stringify({ version: 1, state }, null, 2)], {
+    type: "application/json",
+  });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `mindmap_${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function importJSONFile(file) {
+  const text = await file.text();
+  const data = JSON.parse(text);
+  const next = data.state ?? data;
+
+  state = next;
   saveState(state);
-
   rerender();
   controller.fitToScreen();
 }
 
-// クリック外でroot選択（編集中はblurで確定）
-viewport.addEventListener("click", (e) => {
-  if (state.editingId) {
-    const active = document.activeElement;
-    if (active && active.classList?.contains("label")) active.blur();
-    return;
-  }
-
-  // ノード上クリックは各ノードのclickで処理するので、ここでは無視してもOK
-  // (残すならコメントアウト解除)
-  // if (e.target.closest && e.target.closest(".node")) return;
-
-  state.selectedId = state.rootId;
+// =============================
+// UI bindings
+// =============================
+btnAddChild.onclick = addChild;
+btnDelete.onclick = deleteSelected;
+btnReset.onclick = () => {
+  if (!confirm("マインドマップを初期化しますか？")) return;
+  pushHistory();
+  state = defaultState();
   saveState(state);
   rerender();
-});
+  controller.fitToScreen();
+};
 
-// ボタン
-btnAddChild.addEventListener("click", addChild);
-btnDelete.addEventListener("click", deleteSelected);
-btnReset.addEventListener("click", reset);
+btnExport.onclick = exportJSON;
+btnImport.onclick = () => importFile.click();
+importFile.onchange = () => importJSONFile(importFile.files[0]);
 
-// キーボード
+// Undo / Redo
 window.addEventListener("keydown", (e) => {
-  if (state.editingId) {
-    if (e.key === "Escape") cancelEdit();
-    return;
-  }
+  const mod = navigator.platform.includes("Mac") ? e.metaKey : e.ctrlKey;
 
-  if (e.key.toLowerCase() === "a") addChild();
-  if (e.key === "Delete" || e.key === "Backspace") deleteSelected();
+  if (mod && e.key === "z") {
+    e.preventDefault();
+    e.shiftKey ? redo() : undo();
+  } else if (mod && e.key === "y") {
+    e.preventDefault();
+    redo();
+  }
 });
 
-// controller（パン&ズーム中は線だけ更新）
+// =============================
+// Viewport controller
+// =============================
 const controller = createViewportController({
   viewport,
   nodesEl,
   canvas,
   ctx,
-  getState,
+  getState: () => state,
   rerender,
-  onViewChange: requestEdgeRedraw, // ★ここが肝
+  onViewChange: requestEdgeRedraw,
 });
 
-btnFit.addEventListener("click", controller.fitToScreen);
+btnFit.onclick = controller.fitToScreen;
 
 window.addEventListener("resize", () => {
   dpr = resizeCanvas(canvas, ctx);
@@ -288,7 +328,7 @@ window.addEventListener("resize", () => {
   controller.fitToScreen();
 });
 
-// 起動
+// 初期化
 rerender();
 controller.applyView();
 controller.fitToScreen();
