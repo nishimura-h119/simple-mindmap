@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mind Map</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="topbar">
+      <div class="left card">
+        <button class="btn" id="btnAddChild" title="ノード追加">
+          <img src="./assets/icons/add.svg" alt="全体表示" class="icons" /> 追加
+        </button>
+
+        <button class="btn" id="btnDelete" title="削除">
+          <img src="./assets/icons/delete.svg" alt="削除" class="icons" /> 削除
+        </button>
+
+        <button class="btn" id="btnFit" title="全体表示">
+          <img
+            src="./assets/icons/open_in_full.svg"
+            alt="全体表示"
+            class="icons"
+          />
+          全体表示
+        </button>
+
+        <button class="btn" id="btnReset" title="リセット">
+          <img
+            src="./assets/icons/restart_alt.svg"
+            alt="リセット"
+            class="icons"
+          />
+          リセット
+        </button>
+
+        <!-- ヘルプ -->
+        <div class="help-wrapper">
+          <button class="btn help-btn" aria-label="ヘルプ">
+            <img src="./assets/icons/help.svg" alt="ヘルプ" class="icons" />
+            <svg viewBox="0 0 24 24" class="icon">
+              <path d="./assets/icons/help.svg" fill="currentColor" />
+            </svg>
+          </button>
+
+          <div class="help-tooltip">
+            クリック：選択<br />
+            ダブルクリック：編集<br />
+            背景ドラッグ：移動 <br />
+            ホイール：拡大
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="viewport">
+      <canvas id="edges"></canvas>
+      <div id="nodes"></div>
+    </div>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
