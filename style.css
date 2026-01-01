@@ -30,6 +30,7 @@ body {
 }
 .bottombar {
   inset: auto 12px 12px 12px;
+  width: fit-content;
 }
 .card {
   background: linear-gradient(

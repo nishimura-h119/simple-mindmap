@@ -25,6 +25,8 @@ const btnFit = document.getElementById("btnFit");
 const btnExport = document.getElementById("btnExport");
 const btnImport = document.getElementById("btnImport");
 const importFile = document.getElementById("importFile");
+const btnUndo = document.getElementById("btnUndo");
+const btnRedo = document.getElementById("btnRedo");
 
 let dpr = resizeCanvas(canvas, ctx);
 
@@ -119,6 +121,16 @@ window.addEventListener("DOMContentLoaded", () => {
   });
   usageModal?.addEventListener("click", (e) => {
     if (e.target === usageModal) closeUsage();
+  });
+
+  btnUndo?.addEventListener("click", () => {
+    if (state.editingId) return; // 編集中は無効にしたいなら
+    undo();
+  });
+
+  btnRedo?.addEventListener("click", () => {
+    if (state.editingId) return;
+    redo();
   });
 });
 
@@ -392,12 +404,22 @@ importFile.onchange = () => importJSONFile(importFile.files[0]);
 
 // Undo / Redo
 window.addEventListener("keydown", (e) => {
+  // 編集中（contenteditable）に Ctrl/Cmd+Z を奪うと文字Undoが死ぬので返す
+  const active = document.activeElement;
+  const isTyping =
+    state.editingId &&
+    active &&
+    active.classList?.contains("label") &&
+    active.getAttribute("contenteditable") === "true";
+
+  if (isTyping) return;
+
   const mod = navigator.platform.includes("Mac") ? e.metaKey : e.ctrlKey;
 
-  if (mod && e.key === "z") {
+  if (mod && e.key.toLowerCase() === "z") {
     e.preventDefault();
     e.shiftKey ? redo() : undo();
-  } else if (mod && e.key === "y") {
+  } else if (mod && e.key.toLowerCase() === "y") {
     e.preventDefault();
     redo();
   }
