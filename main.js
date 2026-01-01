@@ -35,9 +35,12 @@ const introModal = document.getElementById("introModal");
 const usageModal = document.getElementById("usageModal");
 
 const btnUsage = document.getElementById("btnUsage");
+const btnHelp = document.getElementById("btnHelp");
+const btnIntro = document.getElementById("btnIntro");
 const btnCloseIntro = document.getElementById("btnCloseIntro");
 const btnCloseUsage = document.getElementById("btnCloseUsage");
-const btnCloseHelp = document.getElementById("btnHelp");
+
+const otherSection = document.getElementById("otherSection");
 
 function shouldShowIntro() {
   return !localStorage.getItem(FIRST_VISIT_KEY);
@@ -55,8 +58,15 @@ function show(el) {
   el.setAttribute("aria-hidden", "false");
 }
 
+function openIntro({ showTip = false } = {}) {
+  if (showTip) show(otherSection);
+  else hide(otherSection);
+  show(introModal);
+}
+
 function closeIntro() {
   localStorage.setItem(FIRST_VISIT_KEY, "1");
+  hide(otherSection);
   hide(introModal);
 }
 
@@ -70,7 +80,7 @@ function closeUsage() {
 
 window.addEventListener("DOMContentLoaded", () => {
   // 初回だけ intro を表示、2回目以降は非表示
-  if (shouldShowIntro()) show(introModal);
+  if (shouldShowIntro()) openIntro({ showTip: false });
   else hide(introModal);
 
   hide(usageModal);
@@ -79,6 +89,16 @@ window.addEventListener("DOMContentLoaded", () => {
   btnUsage?.addEventListener("click", (e) => {
     e.preventDefault();
     openUsage();
+  });
+  btnHelp?.addEventListener("click", (e) => {
+    e.preventDefault();
+    openUsage();
+  });
+
+  // intro 開く
+  btnIntro?.addEventListener("click", (e) => {
+    e.preventDefault();
+    openIntro({ showTip: true });
   });
 
   // intro の閉じる
@@ -92,17 +112,14 @@ window.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     closeUsage();
   });
-  btnCloseHelp?.addEventListener("click", (e) => {
-    e.preventDefault();
-    closeUsage();
-  });
 
-  // モーダル外クリックで閉じる（任意：欲しくなければ消してOK）
+  // モーダル外クリックで閉じる
+  introModal?.addEventListener("click", (e) => {
+    if (e.target === introModal) closeIntro();
+  });
   usageModal?.addEventListener("click", (e) => {
     if (e.target === usageModal) closeUsage();
   });
-
-  btnHelp.addEventListener("click", openUsage);
 });
 
 // =============================

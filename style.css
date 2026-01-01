@@ -18,7 +18,8 @@ body {
   font-family: "Inter", "Noto Sans JP", system-ui, -apple-system,
     BlinkMacSystemFont, sans-serif;
 }
-.topbar {
+.topbar,
+.bottombar {
   position: fixed;
   inset: 12px 12px auto 12px;
   display: flex;
@@ -26,6 +27,9 @@ body {
   align-items: center;
   justify-content: space-between;
   z-index: 10;
+}
+.bottombar {
+  inset: auto 12px 12px 12px;
 }
 .card {
   background: linear-gradient(
@@ -56,6 +60,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  text-decoration: none;
 }
 .btn:hover {
   border-color: rgba(148, 163, 184, 0.45);
@@ -145,27 +150,6 @@ body {
   display: inline-block;
 }
 
-.help-tooltip {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  width: 180px;
-  padding: 10px 12px;
-
-  background: rgba(20, 25, 40, 0.95);
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 10px;
-  color: #e5e7eb;
-  font-size: 16px;
-  line-height: 1.4;
-
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-4px);
-  transition: opacity 0.15s ease, transform 0.15s ease;
-  z-index: 50;
-}
-
 .help-wrapper:hover .help-tooltip {
   opacity: 1;
   transform: translateY(0);
@@ -199,10 +183,31 @@ body {
   margin: 0 0 10px;
 }
 
+.introSection {
+  gap: 24px;
+}
+
+.introSectionBtns {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 12px;
+}
+
 .introSectionTitle {
   font-size: 14px;
-  margin: 16px 0 8px;
   color: rgba(226, 232, 240, 0.95);
+  margin: 0;
+}
+
+.introSectionContents {
+  font-size: 12px;
+  margin: 0;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  padding-left: 8px;
 }
 
 .introList {
@@ -232,4 +237,30 @@ body {
 
 .is-hidden {
   display: none !important;
+}
+
+.line {
+  border: var(--muted) dashed 1px;
+  margin: 12px 0px;
+}
+
+.otherSection {
+  padding: 10px 0px;
+}
+
+.tipLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(15, 23, 42, 0.55);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.tipLink:hover {
+  border-color: rgba(148, 163, 184, 0.45);
 }

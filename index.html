@@ -29,6 +29,55 @@
           端末/ブラウザが変わると引き継がれません。
         </p>
 
+        <!-- おひねり（btnIntroで開いた時だけ表示） -->
+        <div id="otherSection" class="otherSection is-hidden">
+          <div class="line"></div>
+
+          <div>
+            <h4 class="introSectionTitle">お問い合わせ</h4>
+            <p class="introSectionContents">
+              不具合などありましたら、各種SNSのDMやメールにてお問い合わせください。
+            </p>
+
+            <div class="introSectionBtns">
+              <a
+                class="btn"
+                href="https://x.com/nishiytea"
+                target="_blank"
+                rel="noopener"
+              >
+                X（旧Twitter）
+              </a>
+              <a
+                class="btn"
+                href="mailto:nishimura.h.119@gmail.com"
+                target="_blank"
+                rel="noopener"
+              >
+                メールで問い合わせる
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="introSectionTitle">応援</h4>
+            <p class="introSectionContents">
+              もし役に立ったら、コーヒー1杯分の応援をもらえると嬉しいです。<br />
+            </p>
+            <div class="introSectionBtns">
+              <a
+                class="btn"
+                href="YOUR_TIP_LINK_HERE"
+                target="_blank"
+                rel="noopener"
+              >
+                コーヒーをおごる
+              </a>
+            </div>
+          </div>
+          <div class="line"></div>
+        </div>
+
         <div class="introModalBtns">
           <button class="introModalBtn btn" id="btnUsage">使い方を見る</button>
           <button class="introModalBtn btn" id="btnCloseIntro">閉じる</button>
@@ -142,15 +191,25 @@
           />
           リセット
         </button>
+      </div>
+    </div>
 
-        <!-- ヘルプ -->
+    <div class="bottombar">
+      <div class="left">
         <div class="help-wrapper">
           <button class="btn" id="btnHelp" aria-label="ヘルプ">
+            <img src="./assets/icons/help.svg" alt="ヘルプ" class="icons" />
+          </button>
+          <button
+            class="btn"
+            id="btnIntro"
+            aria-label="Simple Mind Mapについて"
+          >
             <img
-              src="./assets/icons/help.svg"
-              alt="ヘルプ"
+              src="./assets/icons/info.svg"
+              alt="Simple Mind Mapについて"
               class="icons"
-            />使い方
+            />
           </button>
         </div>
       </div>
