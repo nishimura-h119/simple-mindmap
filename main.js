@@ -11,6 +11,8 @@ import { createViewportController } from "./interaction.js";
 
 let state = loadState() ?? defaultState();
 
+const FIRST_VISIT_KEY = "mindmap_first_visit";
+
 const viewport = document.getElementById("viewport");
 const nodesEl = document.getElementById("nodes");
 const canvas = document.getElementById("edges");
@@ -25,6 +27,83 @@ const btnImport = document.getElementById("btnImport");
 const importFile = document.getElementById("importFile");
 
 let dpr = resizeCanvas(canvas, ctx);
+
+// =============================
+// Intro / Usage Modal
+// =============================
+const introModal = document.getElementById("introModal");
+const usageModal = document.getElementById("usageModal");
+
+const btnUsage = document.getElementById("btnUsage");
+const btnCloseIntro = document.getElementById("btnCloseIntro");
+const btnCloseUsage = document.getElementById("btnCloseUsage");
+const btnCloseHelp = document.getElementById("btnHelp");
+
+function shouldShowIntro() {
+  return !localStorage.getItem(FIRST_VISIT_KEY);
+}
+
+function hide(el) {
+  if (!el) return;
+  el.classList.add("is-hidden");
+  el.setAttribute("aria-hidden", "true");
+}
+
+function show(el) {
+  if (!el) return;
+  el.classList.remove("is-hidden");
+  el.setAttribute("aria-hidden", "false");
+}
+
+function closeIntro() {
+  localStorage.setItem(FIRST_VISIT_KEY, "1");
+  hide(introModal);
+}
+
+function openUsage() {
+  show(usageModal);
+}
+
+function closeUsage() {
+  hide(usageModal);
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  // 初回だけ intro を表示、2回目以降は非表示
+  if (shouldShowIntro()) show(introModal);
+  else hide(introModal);
+
+  hide(usageModal);
+
+  // 使い方を見る → 使い方モーダル表示
+  btnUsage?.addEventListener("click", (e) => {
+    e.preventDefault();
+    openUsage();
+  });
+
+  // intro の閉じる
+  btnCloseIntro?.addEventListener("click", (e) => {
+    e.preventDefault();
+    closeIntro();
+  });
+
+  // 使い方モーダルの閉じる
+  btnCloseUsage?.addEventListener("click", (e) => {
+    e.preventDefault();
+    closeUsage();
+  });
+  btnCloseHelp?.addEventListener("click", (e) => {
+    e.preventDefault();
+    closeUsage();
+  });
+
+  // モーダル外クリックで閉じる（任意：欲しくなければ消してOK）
+  usageModal?.addEventListener("click", (e) => {
+    if (e.target === usageModal) closeUsage();
+  });
+
+  btnHelp.addEventListener("click", openUsage);
+});
 
 // =============================
 // Undo / Redo

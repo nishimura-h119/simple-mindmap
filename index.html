@@ -3,10 +3,92 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Mind Map</title>
+    <title>Simple Mind Map</title>
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
+    <div id="introModal" class="intro-overlay is-hidden" aria-hidden="true">
+      <div
+        class="intro-box"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="introTitle"
+      >
+        <h3 id="introTitle" class="introModalTitle">
+          <img src="./assets/icons/info.svg" class="icon" />
+          <span>Simple Mind Mapへようこそ</span>
+        </h3>
+
+        <p class="">
+          このツールは、考えを整理するためのシンプルなマインドマップです。<br />
+          登録不要で、ブラウザ上ですぐ使えます。
+        </p>
+
+        <p class="annotation">
+          ※ 内容はこのブラウザ内に保存されます。<br />※
+          端末/ブラウザが変わると引き継がれません。
+        </p>
+
+        <div class="introModalBtns">
+          <button class="introModalBtn btn" id="btnUsage">使い方を見る</button>
+          <button class="introModalBtn btn" id="btnCloseIntro">閉じる</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="usageModal" class="intro-overlay is-hidden" aria-hidden="true">
+      <div
+        class="intro-box"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="usageTitle"
+      >
+        <h3 class="introModalTitle" id="usageTitle">
+          <img src="./assets/icons/help.svg" class="icon" alt="" />
+          <span>使い方</span>
+        </h3>
+
+        <p class="annotation">登録不要で使えます。</p>
+        <p class="annotation">
+          内容はブラウザ内に保存されますが、端末/ブラウザが変わると引き継がれません。
+        </p>
+
+        <h4 class="introSectionTitle">ボタン</h4>
+        <ul class="introList">
+          <li><b>元に戻す</b>：1つ前の操作に戻します</li>
+          <li><b>やり直す</b>：元に戻した操作をやり直します</li>
+          <li><b>追加</b>：選択中ノードの子ノードを追加します</li>
+          <li><b>削除</b>：選択中ノードを削除します（ルートは削除不可）</li>
+          <li><b>インポート</b>：JSONファイルから読み込みます</li>
+          <li><b>エクスポート</b>：JSONファイルとして保存します</li>
+          <li><b>全画面表示</b>：全体が画面に収まるように表示します</li>
+          <li><b>リセット</b>：マインドマップを初期化します</li>
+        </ul>
+
+        <h4 class="introSectionTitle">操作</h4>
+        <ul class="introList">
+          <li><b>クリック</b>：ノード選択</li>
+          <li>
+            <b>ダブルクリック</b>：編集開始（Enterで確定 / Escでキャンセル）
+          </li>
+          <li><b>背景ドラッグ</b>：画面移動（パン）</li>
+          <li><b>ホイール</b>：拡大・縮小（ズーム）</li>
+        </ul>
+
+        <div class="introModalBtns">
+          <button
+            class="introModalBtn btn"
+            id="btnCloseUsage"
+            type="button"
+            title="閉じる"
+          >
+            <img src="./assets/icons/close.svg" class="icon" alt="" />
+            <span>閉じる</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="topbar">
       <div class="left card">
         <button class="btn" id="btnUndo" title="元に戻す (Ctrl+Z)">
@@ -63,20 +145,13 @@
 
         <!-- ヘルプ -->
         <div class="help-wrapper">
-          <button class="btn help-btn" aria-label="ヘルプ">
+          <button class="btn" id="btnHelp" aria-label="ヘルプ">
             <img
               src="./assets/icons/help.svg"
               alt="ヘルプ"
               class="icons"
-            />ヘルプ
+            />使い方
           </button>
-
-          <div class="help-tooltip">
-            クリック：選択<br />
-            ダブルクリック：編集<br />
-            背景ドラッグ：移動 <br />
-            ホイール：拡大
-          </div>
         </div>
       </div>
     </div>
